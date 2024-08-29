@@ -1,0 +1,33 @@
+# ZANE-Notebooks
+
+## Análise de Dados ZANE / Mundial
+
+## Descrição
+Estes jupyter notebooks são responsáveis por realizar os procedimentos automáticos para a análise de dados da Mundial.
+Eles executam os módulos disponíveis nos arquivos,
+- api/alis.py
+- api/auth.py
+- api/send_api.py
+- preprocess/cleanup.py
+- preprocess/ensemble.py 
+- preprocess/movement.py
+
+## Pré-requisitos
+Linguagem python 3.9 com pip ou uma distribuição Anaconda semelhante.
+
+## Instalação
+Após a instalação do python 3.9, executar, 
+
+> pip install -r .\requirements.txt
+
+
+Caso já tenha uma versão do python anaconda, basta instalar as dependências mais específicas, como geopandas. Elas estão listadas no arquivo requirements.txt.
+Para executar os notebooks, recomenda-se uma versão da sua preferência de editor. Um editor para jupyter notebooks pode ser baixado pelo pip com o comando,
+
+> pip install jupyterlab
+
+Ao ser executado na raiz deste diretório, o comando,
+
+> jupyter lab
+
+Abre a pasta para que seja possível interagir com os diferentes notebooks.

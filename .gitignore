@@ -1,0 +1,11 @@
+token
+dados/
+dados limpos/
+parado/
+anomalias/
+data.csv
+model/medium.joblib
+model/small.joblib
+log/
+*.pyc
+**/__pycache__/
