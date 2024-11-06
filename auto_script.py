@@ -32,7 +32,7 @@ if __name__ == "__main__":
         "1_parado_andando.ipynb",
         "2_anomalias.ipynb",
         "2_vis_boxplot.ipynb",
-        "2_vis_heatmap.ipynb"
+        "2_vis_heatmap.ipynb",
         "upload.ipynb"
     ]
 
