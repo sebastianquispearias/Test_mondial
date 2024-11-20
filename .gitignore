@@ -9,3 +9,7 @@ model/small.joblib
 log/
 *.pyc
 **/__pycache__/
+
+# Allow .py files and ignore the rest in docker dir
+docker/*
+!docker/*.py
