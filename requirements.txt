@@ -5,7 +5,6 @@ geopandas==0.12.2
 scikit-learn
 nbformat==5.10.4
 nbconvert
-jupyter
 tqdm
-matplotlib
 seaborn
+requests
