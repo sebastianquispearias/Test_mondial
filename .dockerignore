@@ -1,0 +1,11 @@
+# Ignore unnecessary directories
+archive
+vis
+
+# Ignore backup or temp files
+*.ipynb
+*.pyc
+__pycache__
+
+# Ignore unnecessary Dockerfiles
+pipeline/Dockerfile

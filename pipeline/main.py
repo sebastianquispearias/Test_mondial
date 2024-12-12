@@ -1,6 +1,7 @@
 import asyncio
 import time
 import sys
+import os
 import subprocess
 
 
@@ -14,8 +15,9 @@ def execute_script(python_file_path):
     start_time = time.time()
 
     try:
-        # Run the Python script
-        subprocess.run(["python", python_file_path], check=True)
+        # Execute pipeline (use absolute path for each file to avoid path errors)
+        abs_script_path = os.path.join(os.path.dirname(__file__), python_file_path)
+        subprocess.run(["python", abs_script_path], check=True)
         execution_time = (time.time() - start_time) / 60  # Calculate time in minutes
         print(f"Script finalizado: {python_file_path} (Tempo de execução: {execution_time:.2f} minutos)")
     except subprocess.CalledProcessError as e:
@@ -26,7 +28,7 @@ if __name__ == "__main__":
         "0_download.py",
         "1_limpeza.py",
         "1_parado_andando.py",
-        "2_anomalias.py",
+        "2_anomalias.py"
         "3_upload.py"
     ]
     for script in scripts_to_execute:
