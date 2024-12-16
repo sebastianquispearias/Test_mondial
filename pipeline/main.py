@@ -28,7 +28,7 @@ if __name__ == "__main__":
         "0_download.py",
         "1_limpeza.py",
         "1_parado_andando.py",
-        "2_anomalias.py"
+        "2_anomalias.py",
         "3_upload.py"
     ]
     for script in scripts_to_execute:
