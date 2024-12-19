@@ -18,10 +18,18 @@ file_name = os.path.basename(__file__)
 #   2) Decidir EN ou PT
 #   3) Adicionar timestamp para cada mensagem de log
 def log_message(message):
-    print(f"[{file_name}]: {message}")
+    print(f"[{current_time_BR()}] - [{file_name}]: {message}")          
 
 def log_error(message):
-    print(f"[{file_name} - ERROR]: {message}")
+    print(f"[{current_time_BR()}] - [{file_name} - ERROR]: {message}")
+    
+# Remover esse codigo comentado depois
+#def  horario():
+#    return time.strftime("%H:%M:%S")
+def current_time_BR():
+    local_time = time.localtime()                                       # Obtém o horário local em formato de segundos
+    brasilia_time = time.localtime(time.mktime(local_time) - 3 * 3600)  # Ajusta o horário para Brasília (UTC -3)
+    return time.strftime("%H:%M:%S", brasilia_time)                     # Formata a hora em HH:MM:SS
 
 if __name__ == '__main__':
     path = './'
