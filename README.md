@@ -31,3 +31,14 @@ Ao ser executado na raiz deste diretório, o comando,
 > jupyter lab
 
 Abre a pasta para que seja possível interagir com os diferentes notebooks.
+
+## Docker
+Gerar imagem docker a partir do diretório raiz do projeto (opcional `-t`: nome da tag):
+> docker build . -t pipeline-mundial
+
+Executar imagem passando os valores das variáveis de ambiente com datas de início ("START_DATE") e fim ("FINISH_DATE"). 
+
+Ex: 
+> docker run -it -e START_DATE="01/01/2025" -e FINISH_DATE="31/01/2025" pipeline-mundial
+
+Após iniciar o container, é possível acompanhar os logs da execução.

@@ -34,9 +34,18 @@ def current_time_BR():
 if __name__ == '__main__':
     path = './'
 
-    # TODO: Datas hardcoded
-    start = "06/09/2024"
-    finish = "13/09/2024"
+    # Set env vars
+    start = os.getenv("START_DATE", "06/09/2024")
+    finish = os.getenv("FINISH_DATE", "13/09/2024")
+
+    # TODO: Utilizar variável para dividir execuções do pipeline em Nox x Abastecimento
+    executeAbastecimento = os.getenv("EXECUTE_ABASTECIMENTO", "False").lower() == "true"
+
+    print(' --------------- Configuração ------------------')
+    print('START_DATE ', start)
+    print('FINISH_DATE ', finish)
+    print('EXECUTE_ABASTECIMENTO ', executeAbastecimento)
+    print(' ---------------------------------')
     start = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple()) * 1000
     finish = time.mktime(datetime.datetime.strptime(finish, "%d/%m/%Y").timetuple()) * 1000
 
