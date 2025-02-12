@@ -25,6 +25,15 @@ def full_csv(select = 'abastecimento'):
 if __name__ == '__main__':
     path='./'
 
+    executeAbastecimento = os.getenv("EXECUTE_ABASTECIMENTO", "False").lower() == "true"
+    executeNox = os.getenv("EXECUTE_NOX","False").lower() == "true"
+    
+    print(' --------------- Configuração ------------------ ')
+    print('EXECUTE_ABASTECIMENTO ', executeAbastecimento)
+    print('EXECUTE_NOX ', executeNox)
+    print(' ----------------------------------------------- ')
+    
+    
     # Cria, caso não exista, a pasta que armazenará os logs
     if not os.path.exists(path+"dados limpos/"): os.makedirs(path+"dados limpos/")
     nox_exists = os.path.exists(path+"dados/nox.csv")
@@ -37,53 +46,55 @@ if __name__ == '__main__':
 
     # TODO: Verificar unused vars
     # Limpeza - Abastecimento
-    old_size = len(abastecimento)
-    abastecimento = filter_km(abastecimento, arg_return=0)
-    print(len(abastecimento))
-    abastecimento = filter_consumption(abastecimento, arg_return=0)
-    print(len(abastecimento))
-    abastecimento = filter_odometer(abastecimento, arg_return=0)
-    print(len(abastecimento))
-    abastecimento.to_csv(path+'dados limpos/abastecimentos.csv')
-    new_size = len(abastecimento)
+    if executeAbastecimento:
+        old_size = len(abastecimento)
+        abastecimento = filter_km(abastecimento, arg_return=0)
+        print(len(abastecimento))
+        abastecimento = filter_consumption(abastecimento, arg_return=0)
+        print(len(abastecimento))
+        abastecimento = filter_odometer(abastecimento, arg_return=0)
+        print(len(abastecimento))
+        abastecimento.to_csv(path+'dados limpos/abastecimentos.csv')
+        new_size = len(abastecimento)
 
     # Limpeza - NOx
-    nox = pd.read_csv(path+'dados/nox.csv', index_col=[0])
-    old_size = len(nox)
-    nox = filter_o2(nox, arg_return=0)
-    print(len(nox))
-    nox = filter_nox_avg(nox, arg_return=0)
-    print(len(nox))
-    nox = filter_nox_max(nox, arg_return=0)
-    print(len(nox))
-    nox = filter_nox_min(nox, arg_return=0)
-    print(len(nox))
-    nox = filter_nox_std(nox, arg_return=0)
-    print(len(nox))
-    nox = filter_nox_duplicates(nox, arg_return=0)
-    print(len(nox))
-    # nox = filter_coordinate_duplicates(nox, arg_return=0)
-    print(len(nox))
-    nox = filter_desligado(nox, arg_return=0)
-    print(len(nox))
-    nox = filter_coordinate_in_brazil(nox, arg_return=0)
-    print(len(nox))
-    nox.to_csv(path+'dados limpos/nox.csv')
-    new_size = len(nox)
-
+    if executeNox:
+        nox = pd.read_csv(path+'dados/nox.csv', index_col=[0])
+        old_size = len(nox)
+        nox = filter_o2(nox, arg_return=0)
+        print(len(nox))
+        nox = filter_nox_avg(nox, arg_return=0)
+        print(len(nox))
+        nox = filter_nox_max(nox, arg_return=0)
+        print(len(nox))
+        nox = filter_nox_min(nox, arg_return=0)
+        print(len(nox))
+        nox = filter_nox_std(nox, arg_return=0)
+        print(len(nox))
+        nox = filter_nox_duplicates(nox, arg_return=0)
+        print(len(nox))
+        # nox = filter_coordinate_duplicates(nox, arg_return=0)
+        print(len(nox))
+        nox = filter_desligado(nox, arg_return=0)
+        print(len(nox))
+        nox = filter_coordinate_in_brazil(nox, arg_return=0)
+        print(len(nox))
+        nox.to_csv(path+'dados limpos/nox.csv')
+        new_size = len(nox)
 
     # Aplicando regras de limpeza
     if not os.path.exists(path+'dados limpos/invalidos/'): os.makedirs(path+'dados limpos/invalidos/')
-    filter_km(full_csv('abastecimento'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_km.csv", index=False)
-    filter_odometer(full_csv('abastecimento'), arg_return=1).to_csv(path+"dados limpos/invalidos/inverted_odometer.csv", index=False)
-    filter_consumption(full_csv('abastecimento'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_consumption.csv", index=False)
+    if executeAbastecimento:
+        filter_km(full_csv('abastecimento'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_km.csv", index=False)
+        filter_odometer(full_csv('abastecimento'), arg_return=1).to_csv(path+"dados limpos/invalidos/inverted_odometer.csv", index=False)
+        filter_consumption(full_csv('abastecimento'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_consumption.csv", index=False)
 
-    filter_o2(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_o2.csv", index=False)
-    filter_nox_avg(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_nox.csv", index=False)
-    filter_desligado(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/vehicle_off.csv", index=False)
-    filter_nox_max(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_nox_max.csv", index=False)
-    filter_nox_min(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_nox_min.csv", index=False)
-    filter_nox_std(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_nox_std.csv", index=False)
-    filter_nox_duplicates(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/nox_duplicates.csv", index=False)
-    filter_coordinate_in_brazil(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/outside_brazil.csv", index=False)
-
+    if executeNox:
+        filter_o2(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_o2.csv", index=False)
+        filter_nox_avg(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_nox.csv", index=False)
+        filter_desligado(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/vehicle_off.csv", index=False)
+        filter_nox_max(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_nox_max.csv", index=False)
+        filter_nox_min(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_nox_min.csv", index=False)
+        filter_nox_std(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/invalid_nox_std.csv", index=False)
+        filter_nox_duplicates(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/nox_duplicates.csv", index=False)
+        filter_coordinate_in_brazil(full_csv('nox'), arg_return=1).to_csv(path+"dados limpos/invalidos/outside_brazil.csv", index=False)

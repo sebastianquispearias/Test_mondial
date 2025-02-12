@@ -23,9 +23,6 @@ def log_message(message):
 def log_error(message):
     print(f"[{current_time_BR()}] - [{file_name} - ERROR]: {message}")
     
-# Remover esse codigo comentado depois
-#def  horario():
-#    return time.strftime("%H:%M:%S")
 def current_time_BR():
     local_time = time.localtime()                                       # Obtém o horário local em formato de segundos
     brasilia_time = time.localtime(time.mktime(local_time) - 3 * 3600)  # Ajusta o horário para Brasília (UTC -3)
@@ -41,11 +38,12 @@ if __name__ == '__main__':
     # TODO: Utilizar variável para dividir execuções do pipeline em Nox x Abastecimento
     executeAbastecimento = os.getenv("EXECUTE_ABASTECIMENTO", "False").lower() == "true"
 
-    print(' --------------- Configuração ------------------')
+    print(' --------------- Configuração ------------------ ')
     print('START_DATE ', start)
     print('FINISH_DATE ', finish)
     print('EXECUTE_ABASTECIMENTO ', executeAbastecimento)
-    print(' ---------------------------------')
+    print(' ----------------------------------------------- ')
+    
     start = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple()) * 1000
     finish = time.mktime(datetime.datetime.strptime(finish, "%d/%m/%Y").timetuple()) * 1000
 
