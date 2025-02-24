@@ -37,11 +37,13 @@ if __name__ == '__main__':
 
     # TODO: Utilizar variável para dividir execuções do pipeline em Nox x Abastecimento
     executeAbastecimento = os.getenv("EXECUTE_ABASTECIMENTO", "False").lower() == "true"
-
+    executeNox = os.getenv("EXECUTE_NOX","False").lower() == "true"
+    
     print(' --------------- Configuração ------------------ ')
     print('START_DATE ', start)
     print('FINISH_DATE ', finish)
     print('EXECUTE_ABASTECIMENTO ', executeAbastecimento)
+    print('EXECUTE_NOX ', executeNox)
     print(' ----------------------------------------------- ')
     
     start = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple()) * 1000
@@ -58,14 +60,15 @@ if __name__ == '__main__':
         os.makedirs(path+"dados/")
 
     # Download dados
-    vehicles_file = path + "dados/informacoes_veiculos.csv"
-    log_message(f"Starting download for {vehicles_file}")
-    vehicles(token, vehicles_file)
+    if executeAbastecimento:
+        vehicles_file = path + "dados/informacoes_veiculos.csv"
+        log_message(f"Starting download for {vehicles_file}")
+        vehicles(token, vehicles_file)
 
-    nox_file = path + "dados/nox.csv"
-    log_message(f"Starting download for {nox_file}")
-    nox(token, nox_file, start=start, finish=finish)
+        nox_file = path + "dados/nox.csv"
+        log_message(f"Starting download for {nox_file}")
+        nox(token, nox_file, start=start, finish=finish)
 
-    fuel_file = path + "dados/abastecimentos.csv"
-    log_message(f"Starting download for {fuel_file}")
-    fuel(token, fuel_file, start=start, finish=finish)
+        fuel_file = path + "dados/abastecimentos.csv"
+        log_message(f"Starting download for {fuel_file}")
+        fuel(token, fuel_file, start=start, finish=finish)

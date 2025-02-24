@@ -28,12 +28,6 @@ if __name__ == '__main__':
     executeAbastecimento = os.getenv("EXECUTE_ABASTECIMENTO", "False").lower() == "true"
     executeNox = os.getenv("EXECUTE_NOX","False").lower() == "true"
     
-    print(' --------------- Configuração ------------------ ')
-    print('EXECUTE_ABASTECIMENTO ', executeAbastecimento)
-    print('EXECUTE_NOX ', executeNox)
-    print(' ----------------------------------------------- ')
-    
-    
     # Cria, caso não exista, a pasta que armazenará os logs
     if not os.path.exists(path+"dados limpos/"): os.makedirs(path+"dados limpos/")
     nox_exists = os.path.exists(path+"dados/nox.csv")
