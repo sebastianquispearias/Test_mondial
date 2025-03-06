@@ -33,14 +33,9 @@ if __name__ == '__main__':
     nox_exists = os.path.exists(path+"dados/nox.csv")
     abastecimento_exists = os.path.exists(path+"dados/abastecimentos.csv")
 
-    if nox_exists and abastecimento_exists:
-        veiculos = pd.read_csv(path+'dados/informacoes_veiculos.csv', index_col=[0])
-        abastecimento = pd.read_csv(path+'dados/abastecimentos.csv', index_col=[0])
-
-
-    # TODO: Verificar unused vars
     # Limpeza - Abastecimento
     if executeAbastecimento:
+        abastecimento = pd.read_csv(path+'dados/abastecimentos.csv', index_col=[0])
         old_size = len(abastecimento)
         abastecimento = filter_km(abastecimento, arg_return=0)
         print(len(abastecimento))

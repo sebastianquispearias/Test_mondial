@@ -42,47 +42,49 @@ if __name__ == '__main__':
     end = os.getenv("FINISH_DATE", "13/09/2024")
     
     executeAbastecimento = os.getenv("EXECUTE_ABASTECIMENTO", "False").lower() == "true"    
-    
+    executeNox = os.getenv("EXECUTE_NOX", "False").lower() == "true"
+
+    with open(path + 'token') as file: token = file.read()
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+
+    # Métricas dos sensores associadas aos prefixos
+    metrics = dict()
+
     if executeAbastecimento:
-        with open(path + 'token') as file: token = file.read()
-        headers = {
-            'Authorization': f'Bearer {token}',
-            'Content-Type': 'application/json'
+        # metrics_abastecimento
+        metrics = {
+            "anomaly_consumption": "Anomalias_Combustivel_",
+            "anomaly_liter_supply": "Anomalias_Combustivel_",
+            "anomaly_km_driven": "Anomalias_Combustivel_"
         }
+        print("Iniciando upload Abastecimento")
 
-        # Estas métricas
-        metrics = [
-            "label_parado_nox",
-            "anomaly_consumption",
-            "anomaly_liter_supply",
-            "anomaly_km_driven",
-            "anomaly_nox",
-            "anomaly_o2",
-        ]
+    if executeNox:
+        # metrics_nox
+        metrics = {
+            "label_parado_nox": "Deteccao_Movimento_",
+            "anomaly_nox": "Anomalias_Combustivel_",
+            "anomaly_o2": "Anomalias_Combustivel_"
+        }
+        print("Iniciando upload NOx")
 
-        # Serão enviadas para os sensores com estes prefixos
-        sensor_prefixes = [
-            'Deteccao_Movimento_',
-            'Anomalias_Combustivel_',
-            'Anomalias_Combustivel_',
-            'Anomalias_Combustivel_',
-            'Anomalias_Combustivel_',
-            'Anomalias_Combustivel_',
-        ]
 
-        # Se eles estiverem na lista se sensores registrados
+    if len(metrics) == 0:
+        log_error("executeNox and executeAbastecimento are both false.")
+    else:
+        # Lista se sensores registrados
         registered_sensors = send_api.get_sensor_names(auth=headers, ambiente='PROD')
         print(registered_sensors)
 
-        # save_log = True
-        save_log = False
-        # TODO FIX
         start = time.mktime(datetime.strptime(start, "%d/%m/%Y").timetuple())
         start *= 1000
         end = time.mktime(datetime.strptime(end, "%d/%m/%Y").timetuple())
         end *= 1000
 
-        for metric, prefix in zip(metrics, sensor_prefixes):
+        for metric, prefix in metrics.items():
             # Recupera a metrica da fonte
             df, metric = send_api.retrieve_metric(path, metric)
             condition = (df['timestamp'] > start) & (df['timestamp'] < end)
@@ -93,7 +95,6 @@ if __name__ == '__main__':
                 # Estabelece a lista de sensores
                 sensores = send_api.truck_sensor_dict(registered_sensors, prefix, auth=headers, ambiente='PROD')
                 # print(sensores)
-                # if save_log == True:
                 #     log(df)
 
                 # Envia da fonte aos sensores
