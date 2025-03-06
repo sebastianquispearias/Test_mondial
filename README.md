@@ -36,9 +36,15 @@ Abre a pasta para que seja possível interagir com os diferentes notebooks.
 Gerar imagem docker a partir do diretório raiz do projeto (opcional `-t`: nome da tag):
 > docker build . -t pipeline-mundial
 
-Executar imagem passando os valores das variáveis de ambiente com datas de início ("START_DATE") e fim ("FINISH_DATE"). 
+Executar imagem passando os valores das variáveis de ambiente:
+- datas de início ("START_DATE") e fim ("FINISH_DATE")
+- executar dados de NOx ("EXECUTE_NOX") OU dados de Abastecimento ("EXECUTE_ABASTECIMENTO")
+  - OBS: O pipeline deve processar apenas uma das opções de dados a cada execução 
 
-Ex: 
-> docker run -it -e START_DATE="01/01/2025" -e FINISH_DATE="31/01/2025" pipeline-mundial
+Ex. NOx: 
+> docker run -it -e START_DATE="01/01/2025" -e FINISH_DATE="31/01/2025" -e EXECUTE_NOX="True" pipeline-mundial
+
+Ex. Abastecimento:
+> docker run -it -e START_DATE="01/01/2025" -e FINISH_DATE="31/01/2025" -e EXECUTE_ABASTECIMENTO="True" pipeline-mundial
 
 Após iniciar o container, é possível acompanhar os logs da execução.
