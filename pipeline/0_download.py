@@ -23,9 +23,6 @@ def log_message(message):
 def log_error(message):
     print(f"[{current_time_BR()}] - [{file_name} - ERROR]: {message}")
     
-# Remover esse codigo comentado depois
-#def  horario():
-#    return time.strftime("%H:%M:%S")
 def current_time_BR():
     local_time = time.localtime()                                       # Obtém o horário local em formato de segundos
     brasilia_time = time.localtime(time.mktime(local_time) - 3 * 3600)  # Ajusta o horário para Brasília (UTC -3)
@@ -40,12 +37,15 @@ if __name__ == '__main__':
 
     # TODO: Utilizar variável para dividir execuções do pipeline em Nox x Abastecimento
     executeAbastecimento = os.getenv("EXECUTE_ABASTECIMENTO", "False").lower() == "true"
-
-    print(' --------------- Configuração ------------------')
+    executeNox = os.getenv("EXECUTE_NOX","False").lower() == "true"
+    
+    print(' --------------- Configuração ------------------ ')
     print('START_DATE ', start)
     print('FINISH_DATE ', finish)
     print('EXECUTE_ABASTECIMENTO ', executeAbastecimento)
-    print(' ---------------------------------')
+    print('EXECUTE_NOX ', executeNox)
+    print(' ----------------------------------------------- ')
+    
     start = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple()) * 1000
     finish = time.mktime(datetime.datetime.strptime(finish, "%d/%m/%Y").timetuple()) * 1000
 
@@ -56,18 +56,19 @@ if __name__ == '__main__':
 
     # Verifica cache
     folder_exists = os.path.exists(path+"dados/")
-    if not folder_exists:
-        os.makedirs(path+"dados/")
+    if not folder_exists: os.makedirs(path+"dados/")
 
     # Download dados
     vehicles_file = path + "dados/informacoes_veiculos.csv"
     log_message(f"Starting download for {vehicles_file}")
     vehicles(token, vehicles_file)
 
-    nox_file = path + "dados/nox.csv"
-    log_message(f"Starting download for {nox_file}")
-    nox(token, nox_file, start=start, finish=finish)
+    if executeAbastecimento:
+        fuel_file = path + "dados/abastecimentos.csv"
+        log_message(f"Starting download for {fuel_file}")
+        fuel(token, fuel_file, start=start, finish=finish)
 
-    fuel_file = path + "dados/abastecimentos.csv"
-    log_message(f"Starting download for {fuel_file}")
-    fuel(token, fuel_file, start=start, finish=finish)
+    if executeNox:
+        nox_file = path + "dados/nox.csv"
+        log_message(f"Starting download for {nox_file}")
+        nox(token, nox_file, start=start, finish=finish)

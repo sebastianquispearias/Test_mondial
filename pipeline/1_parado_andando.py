@@ -19,17 +19,20 @@ def log_error(message):
 
 if __name__ == '__main__':
     path = './'
+    
+    executeNox = os.getenv("EXECUTE_NOX","False").lower() == "true"
 
     if not os.path.exists("parado/"): os.makedirs("parado/")
 
-    file_path = path + "dados/nox.csv"
-    if os.path.exists(file_path):
-        log_message(f"File {file_path} exists, generating DataFrame")
-        df = pd.read_csv(path + "dados/nox.csv", index_col=[0])
-        df = stopped_df(df)
-        csv_path = path + "parado/nox.csv"
-        df.to_csv(csv_path)
-        log_message(f"DataFrame saved to {csv_path}")
-        print(df)
-    else:
-        log_error(f"File {file_path} not found")
+    if executeNox:
+        file_path = path + "dados/nox.csv"
+        if os.path.exists(file_path):
+            log_message(f"File {file_path} exists, generating DataFrame")
+            df = pd.read_csv(path + "dados/nox.csv", index_col=[0])
+            df = stopped_df(df)
+            csv_path = path + "parado/nox.csv"
+            df.to_csv(csv_path)
+            log_message(f"DataFrame saved to {csv_path}")
+            print(df)
+        else:
+            log_error(f"File {file_path} not found")

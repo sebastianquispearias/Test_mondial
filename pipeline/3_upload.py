@@ -37,9 +37,12 @@ if __name__ == '__main__':
     path = './'
     sys.path.append(path)
 
-    # TODO: Datas hardcoded
-    start = "01/01/2024"
-    end = "29/08/2024"
+    # Troca das datas hardcoded por var de ambiente 
+    start = os.getenv("START_DATE", "06/09/2024")
+    end = os.getenv("FINISH_DATE", "13/09/2024")
+    
+    executeAbastecimento = os.getenv("EXECUTE_ABASTECIMENTO", "False").lower() == "true"    
+    executeNox = os.getenv("EXECUTE_NOX", "False").lower() == "true"
 
     with open(path + 'token') as file: token = file.read()
     headers = {
@@ -47,54 +50,55 @@ if __name__ == '__main__':
         'Content-Type': 'application/json'
     }
 
-    # Estas métricas
-    metrics = [
-        "label_parado_nox",
-        "anomaly_consumption",
-        "anomaly_liter_supply",
-        "anomaly_km_driven",
-        "anomaly_nox",
-        "anomaly_o2",
-    ]
+    # Métricas dos sensores associadas aos prefixos
+    metrics = dict()
 
-    # Serão enviadas para os sensores com estes prefixos
-    sensor_prefixes = [
-        'Deteccao_Movimento_',
-        'Anomalias_Combustivel_',
-        'Anomalias_Combustivel_',
-        'Anomalias_Combustivel_',
-        'Anomalias_Combustivel_',
-        'Anomalias_Combustivel_',
-    ]
+    if executeAbastecimento:
+        # metrics_abastecimento
+        metrics = {
+            "anomaly_consumption": "Anomalias_Combustivel_",
+            "anomaly_liter_supply": "Anomalias_Combustivel_",
+            "anomaly_km_driven": "Anomalias_Combustivel_"
+        }
+        print("Iniciando upload Abastecimento")
 
-    # Se eles estiverem na lista se sensores registrados
-    registered_sensors = send_api.get_sensor_names(auth=headers, ambiente='PROD')
-    print(registered_sensors)
+    if executeNox:
+        # metrics_nox
+        metrics = {
+            "label_parado_nox": "Deteccao_Movimento_",
+            "anomaly_nox": "Anomalias_Combustivel_",
+            "anomaly_o2": "Anomalias_Combustivel_"
+        }
+        print("Iniciando upload NOx")
 
-    # save_log = True
-    save_log = False
-    # TODO FIX
-    start = time.mktime(datetime.strptime(start, "%d/%m/%Y").timetuple())
-    start *= 1000
-    end = time.mktime(datetime.strptime(end, "%d/%m/%Y").timetuple())
-    end *= 1000
 
-    for metric, prefix in zip(metrics, sensor_prefixes):
-        # Recupera a metrica da fonte
-        df, metric = send_api.retrieve_metric(path, metric)
-        condition = (df['timestamp'] > start) & (df['timestamp'] < end)
-        df = df[condition]
-        if len(df) > 0:
-            print(len(df))
+    if len(metrics) == 0:
+        log_error("executeNox and executeAbastecimento are both false.")
+    else:
+        # Lista se sensores registrados
+        registered_sensors = send_api.get_sensor_names(auth=headers, ambiente='PROD')
+        print(registered_sensors)
 
-            # Estabelece a lista de sensores
-            sensores = send_api.truck_sensor_dict(registered_sensors, prefix, auth=headers, ambiente='PROD')
-            # print(sensores)
-            # if save_log == True:
-            #     log(df)
+        start = time.mktime(datetime.strptime(start, "%d/%m/%Y").timetuple())
+        start *= 1000
+        end = time.mktime(datetime.strptime(end, "%d/%m/%Y").timetuple())
+        end *= 1000
 
-            # Envia da fonte aos sensores
-            send_api.send_data(sensores, source=df, metric=metric, auth=headers, ambiente='PROD')
+        for metric, prefix in metrics.items():
+            # Recupera a metrica da fonte
+            df, metric = send_api.retrieve_metric(path, metric)
+            condition = (df['timestamp'] > start) & (df['timestamp'] < end)
+            df = df[condition]
+            if len(df) > 0:
+                print(len(df))
+
+                # Estabelece a lista de sensores
+                sensores = send_api.truck_sensor_dict(registered_sensors, prefix, auth=headers, ambiente='PROD')
+                # print(sensores)
+                #     log(df)
+
+                # Envia da fonte aos sensores
+                send_api.send_data(sensores, source=df, metric=metric, auth=headers, ambiente='PROD')
 
 
 
