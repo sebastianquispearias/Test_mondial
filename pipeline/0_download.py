@@ -32,7 +32,7 @@ if __name__ == '__main__':
     path = './'
 
     # Set env vars
-    start = os.getenv("START_DATE", "01/01/2024")
+    start = os.getenv("START_DATE", "01/10/2025")
     finish = os.getenv("FINISH_DATE", "01/01/2025")
 
     # TODO: Utilizar variável para dividir execuções do pipeline em Nox x Abastecimento
