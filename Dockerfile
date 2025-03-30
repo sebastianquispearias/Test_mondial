@@ -1,20 +1,21 @@
-FROM python:3.9-slim
+    FROM python:3.9-slim
 
-WORKDIR /app
+    WORKDIR /app
 
-# Copy only the necessary files and directories
-COPY requirements.txt .
-#COPY api/*.py ./api/
+    # Copy only the necessary files and directories
+    COPY requirements.txt .
+    COPY api/*.py ./api/
 
-#COPY preprocess/*.py ./preprocess/
-###COPY preprocess/ ./preprocess/
+    COPY preprocess/*.py ./preprocess/
+    ##COPY preprocess/ ./preprocess/
 
-###COPY dados_rutas_lojas.py
+    ##COPY dados_rutas_lojas.py
 
-#COPY pipeline/*.py ./pipeline/
+    COPY pipeline/*.py ./pipeline/
 
-RUN pip install --no-cache-dir -r requirements.txt
+    RUN pip install --no-cache-dir -r requirements.txt
 
-ENV PYTHONPATH="${PYTHONPATH}:/app"
+    ENV PYTHONPATH="${PYTHONPATH}:/app"
 
-CMD ["python", "pipeline/main.py"]
+    #CMD ["python", "pipeline/main.py"]
+    CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "pipeline/main.py"]

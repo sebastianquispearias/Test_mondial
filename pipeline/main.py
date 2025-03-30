@@ -3,7 +3,12 @@ import time
 import sys
 import os
 import subprocess
+import debugpy
 
+# Forzar la espera al depurador
+print("Debug: Esperando conexión del depurador...")
+debugpy.wait_for_client()  # Esto pausará la ejecución hasta que VS Code se conecte
+print("Debug: Conexión establecida, continuando la ejecución...")
 
 # TODO: Verificar esse check para windows... Não deve fazer sentido dentro do Docker
 if sys.platform.startswith('win'):
@@ -23,7 +28,7 @@ def execute_script(python_file_path):
     except subprocess.CalledProcessError as e:
         print(f"Erro ao executar o script '{python_file_path}': {e}")
 
-if __name__ == "__main__":
+if __name__ == "__main__": # falta colocar al inicio de la lsita "0_download.py",
     scripts_to_execute = [
         "0_download.py",
         "1_limpeza.py",

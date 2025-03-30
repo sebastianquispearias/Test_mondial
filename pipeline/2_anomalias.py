@@ -23,13 +23,15 @@ if not os.path.exists(path + "dados limpos/invalidos/"):
 
 
 nox_exists = os.path.exists(path + "dados limpos/nox.csv")
+print("nox_exists:", nox_exists)
 abastecimento_exists = os.path.exists(path + "dados limpos/abastecimentos.csv")
 veiculos_exists = os.path.exists(path + "dados/informacoes_veiculos.csv")
 abastecimento_invalidos_path = path + "dados limpos/invalidos/invalid_consumption.csv"
 
 ## Carga de datos 
-if not nox_exists and abastecimento_exists and veiculos_exists:
+if nox_exists and abastecimento_exists and veiculos_exists:
     nox = pd.read_csv(path + "dados limpos/nox.csv")
+    print("DataFrame de nox limpos:", nox.shape)
     veiculos = pd.read_csv(path + "dados/informacoes_veiculos.csv")
     abastecimento = pd.read_csv(path + "dados limpos/abastecimentos.csv")
     abastecimento_invalido = pd.read_csv(abastecimento_invalidos_path)
@@ -216,5 +218,5 @@ if nox_exists:
     
     nox_procesado = pd.concat(vehiculos_procesados, ignore_index=True)
     
-    nox_procesado.to_csv(path + "anomalias/nox_speed.csv", index=False)
+    nox_procesado.to_csv(path + "anomalias/nox.csv", index=False)
     
