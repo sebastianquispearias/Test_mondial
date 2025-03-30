@@ -31,6 +31,11 @@ if __name__ == '__main__':
     # Cria, caso não exista, a pasta que armazenará os logs
     if not os.path.exists(path+"dados limpos/"): os.makedirs(path+"dados limpos/")
     nox_exists = os.path.exists(path+"dados/nox.csv")
+    file_path = path + "dados/nox.csv"
+    if nox_exists:
+        print(f"Archivo {file_path} encontrado, tamaño: {os.path.getsize(file_path)} bytes")
+    else:
+        print(f"ERROR: Archivo {file_path} no encontrado")
     abastecimento_exists = os.path.exists(path+"dados/abastecimentos.csv")
 
     # Limpeza - Abastecimento
@@ -49,6 +54,8 @@ if __name__ == '__main__':
     # Limpeza - NOx
     if executeNox:
         nox = pd.read_csv(path+'dados/nox.csv', index_col=[0])
+        print(f"DataFrame de NOx: {nox.shape[0]} filas")
+
         old_size = len(nox)
         nox = filter_o2(nox, arg_return=0)
         print(len(nox))
@@ -69,6 +76,7 @@ if __name__ == '__main__':
         nox = filter_coordinate_in_brazil(nox, arg_return=0)
         print(len(nox))
         nox.to_csv(path+'dados limpos/nox.csv')
+        print(f"Arquivo dados limpos/nox.csv gerado com sucesso")
         new_size = len(nox)
 
     # Aplicando regras de limpeza

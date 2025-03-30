@@ -9,40 +9,53 @@ import pandas as pd
 def retrieve_metric(path, filter="anomaly_consumption"):
     
     if filter=="anomaly_consumption":
+        print("[DEBUG] Leyendo: " + path + "anomalias/abastecimentos.csv")
         source = pd.read_csv(path+"anomalias/abastecimentos.csv")  
+        print("[DEBUG] Forma inicial: ", source.shape)
         source = source[source[filter] == 1]  
         local_name = "consumption"
         alis_name = "Ensemble Consumo"
     
     elif filter=="anomaly_liter_supply":
+        print("[DEBUG] Leyendo: " + path + "anomalias/abastecimentos.csv")
         source = pd.read_csv(path+"anomalias/abastecimentos.csv")
+        print("[DEBUG] Forma inicial: ", source.shape)
         source = source[source[filter] == 1]
         local_name = "liter_supply"
         alis_name = "Ensemble Litros"
 
     elif filter == "anomaly_km_driven":
+        print("[DEBUG] Leyendo: " + path + "anomalias/abastecimentos.csv")
         source = pd.read_csv(path+"anomalias/abastecimentos.csv")
+        print("[DEBUG] Forma inicial: ", source.shape)
         source = source[source[filter] == 1]
         local_name = "km_driven"
         alis_name = "Ensemble Km"
 
     elif filter=="anomaly_nox":
+        print("[DEBUG] Leyendo: " + path + "anomalias/nox.csv")
         source = pd.read_csv(path+"anomalias/nox.csv")
+        print("[DEBUG] Forma inicial: ", source.shape)
         source = source[source[filter] == 1]
         local_name = "NOx"
         alis_name = "Ensemble NOx"
 
     elif filter =="anomaly_o2":
+        print("[DEBUG] Leyendo: " + path + "anomalias/nox.csv")
         source = pd.read_csv(path+"anomalias/nox.csv")
+        print("[DEBUG] Forma inicial: ", source.shape)
         source = source[source[filter] == 1]
         local_name = "O2"
         alis_name = "Ensemble O2"
 
     elif filter =="label_parado_nox":
+        print("[DEBUG] Leyendo: " + path + "parado/nox.csv")
         source = pd.read_csv(path+"parado/nox.csv")
+        print("[DEBUG] Forma inicial: ", source.shape)
         local_name = "label_parado_nox"
         alis_name = "parado"
 
+    print("[DEBUG] Forma final (columnas seleccionadas):", source[[local_name, 'timestamp', 'vehicle_number']].shape)
     source = source[[local_name, 'timestamp', 'vehicle_number']]
     source = source.rename(columns={local_name:alis_name})
     return source, alis_name

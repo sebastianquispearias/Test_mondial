@@ -62,6 +62,8 @@ if __name__ == '__main__':
     vehicles_file = path + "dados/informacoes_veiculos.csv"
     log_message(f"Starting download for {vehicles_file}")
     vehicles(token, vehicles_file)
+    if os.path.exists(vehicles_file):
+        print(f"Archivo {vehicles_file} descargado, tamaño: {os.path.getsize(vehicles_file)} bytes")
 
     if executeAbastecimento:
         fuel_file = path + "dados/abastecimentos.csv"

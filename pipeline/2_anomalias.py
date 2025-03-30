@@ -130,8 +130,11 @@ if nox_exists:
     ]
     nox = nox[~((nox['lat'] == 0) & (nox['lon'] == 0))].reset_index(drop=True)
 
-    # Convertir timestamp (asegúrate que el formato sea correcto, aquí se usa unit='ms' según tu ejemplo)
-    nox['timestamp'] = pd.to_datetime(nox['timestamp'], unit='ms')
+    nox['timestamp_string'] = pd.to_datetime(nox['timestamp'], unit='ms')
+    # Deja 'timestamp' como está (numérico), o si 'nox' originalmente tiene 'timestamp' como string,
+    # conviértelo a numérico y guárdalo en 'timestamp'
+    nox['timestamp'] = pd.to_numeric(nox['timestamp'], errors='coerce')
+
     
     # (Opcional: Ordenar por 'order' o por 'timestamp' si es necesario)
     # nox = nox.sort_values(by=['vehicle_number', 'timestamp'], ascending=[True, False])
@@ -149,9 +152,9 @@ if nox_exists:
             lambda row: haversine(row['lat_prev'], row['lon_prev'], row['lat'], row['lon']), axis=1
         )
         # df_vehiculo['distancia_km'].fillna(-1, inplace=True)  # La primera distancia se establece en -1
-        
+        print("hola")
         # Calcular la diferencia de tiempo en segundos (usando diff con periods=-1 para datos en orden descendente)
-        df_vehiculo['time_diff_sec'] = df_vehiculo['timestamp'].diff(periods=-1).dt.total_seconds().abs()
+        df_vehiculo['time_diff_sec'] = df_vehiculo['timestamp'].diff(periods=-1).abs() / 1000
         
         # Crear un flag si el tiempo entre filas es alto (por ejemplo, mayor a 480 segundos)
         df_vehiculo['flag_tiempo_alto'] = df_vehiculo['time_diff_sec'].apply(
@@ -217,6 +220,8 @@ if nox_exists:
         vehiculos_procesados.append(df_vehiculo)
     
     nox_procesado = pd.concat(vehiculos_procesados, ignore_index=True)
+    print(f"DataFrame de NOx processado: {nox_procesado.shape[0]} filas")
     
+        
     nox_procesado.to_csv(path + "anomalias/nox.csv", index=False)
-    
+    print("Arquivo anomalias/nox.csv gerado com sucesso")
