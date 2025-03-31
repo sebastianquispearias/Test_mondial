@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Importar la lista de tiendas desde el archivo dados_rutas_lojas.py
-# from dados_rutas_lojas import branches
+#from dados_rutas_lojas import branches
 
 # Verifica la existencia de archivos
 path = "./"  
