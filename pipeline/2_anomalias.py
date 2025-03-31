@@ -6,9 +6,8 @@ from math import radians, sin, cos, sqrt, atan2
 import numpy as np
 import matplotlib.pyplot as plt
 #import seaborn as sns
-from utils.geo_utils import haversine, 
 from utils.maintenance import detectar_mantenimiento
-from utils.geo_utils import extract_coordinates, filtrar_gps, obter_filial_con_estado
+from utils.geo_utils import haversine, extract_coordinates, filtrar_gps, obter_filial_con_estado
 
 # Importar la lista de tiendas desde el archivo dados_rutas_lojas.py
 from pipeline.dados_rutas_lojas import branches
