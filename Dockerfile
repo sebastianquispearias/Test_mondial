@@ -2,15 +2,11 @@
 
     WORKDIR /app
 
-    # Copy only the necessary files and directories
     COPY requirements.txt .
     COPY api/*.py ./api/
-
     COPY preprocess/*.py ./preprocess/
     ##COPY preprocess/ ./preprocess/
-
-    ##COPY dados_rutas_lojas.py
-
+    COPY utils/ ./utils/    
     COPY pipeline/*.py ./pipeline/
 
     RUN pip install --no-cache-dir -r requirements.txt

@@ -6,6 +6,9 @@ from math import radians, sin, cos, sqrt, atan2
 import numpy as np
 import matplotlib.pyplot as plt
 #import seaborn as sns
+from utils.geo_utils import haversine, 
+from utils.maintenance import detectar_mantenimiento
+from utils.geo_utils import extract_coordinates, filtrar_gps, obter_filial_con_estado
 
 # Importar la lista de tiendas desde el archivo dados_rutas_lojas.py
 from pipeline.dados_rutas_lojas import branches
@@ -28,7 +31,9 @@ abastecimento_exists = os.path.exists(path + "dados limpos/abastecimentos.csv")
 veiculos_exists = os.path.exists(path + "dados/informacoes_veiculos.csv")
 abastecimento_invalidos_path = path + "dados limpos/invalidos/invalid_consumption.csv"
 
-## Carga de datos 
+############################################################################################
+# Procesar abastecimento
+############################################################################################
 if nox_exists and abastecimento_exists and veiculos_exists:
     nox = pd.read_csv(path + "dados limpos/nox.csv")
     print("DataFrame de nox limpos:", nox.shape)
@@ -44,7 +49,7 @@ if nox_exists and abastecimento_exists and veiculos_exists:
     # Detectar anomalías
     clf = VoteEnsemble()
     
-    # Entrenar con `abastecimento` y predecir en ambos conjuntos
+    # Entrenar con `abastecimento` y predecir 
     clf.fit(abastecimento["km_driven"])
     abastecimento["anomaly_km_driven"] = clf.predict(abastecimento["km_driven"])
     if not abastecimento_invalido.empty:
@@ -64,35 +69,9 @@ if nox_exists and abastecimento_exists and veiculos_exists:
     abastecimento = pd.concat([abastecimento, abastecimento_invalido], ignore_index=True)
     abastecimento = abastecimento.replace({True: 1, False: 0})
     abastecimento.to_csv(path + "anomalias/abastecimentos.csv", index=False)
-
-# Función  Haversine
-def haversine(lat1, lon1, lat2, lon2):
-    if pd.isnull(lat1) or pd.isnull(lon1) or pd.isnull(lat2) or pd.isnull(lon2):
-        return 0
-    R = 6371.0  
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    return R * c  
-
-# retorna el nombre de la tienda 
-def obtener_tienda_con_estado(lat, lon, branches):
-    for branch in branches:
-        branch_umbral = branch.get("umbral", 0.2)  # umbral para cada tienda,  por defecto 0.2 km
-        if haversine(lat, lon, branch['lat'], branch['lon']) <= branch_umbral:
-            return branch['name']
-    return ""
-
-# Función para detectar vehículos con necesidad de mantenimiento
-def detectar_mantenimiento(df):
-    nox_por_velocidad = df.groupby(['vehicle_number', 'clasificacion_velocidad'])['NOx'].mean().unstack()
-    nox_por_velocidad['requiere_mantenimiento'] = (nox_por_velocidad['elevada'] > nox_por_velocidad['media'])
-    df_mantenimiento = nox_por_velocidad[nox_por_velocidad['requiere_mantenimiento']].reset_index()
-    return df_mantenimiento[['vehicle_number', 'requiere_mantenimiento']]
-
+############################################################################################
 # Procesar NOx
+############################################################################################
 if nox_exists:
     # Cargar datos
     nox = pd.read_csv(path + "dados limpos/nox.csv")
@@ -103,12 +82,11 @@ if nox_exists:
     nox['anomaly_o2'] = clf.fit_predict(nox['O2'])
     
     # Extraer coordenadas de la columna 'position'
-    nox[['lon', 'lat']] = nox['position'].str.extract(r'POINT\(([-\d\.]+) ([-\d\.]+)\)').astype(float)
-    
+    nox = extract_coordinates(nox)
         
     # --- DEBUG INFO ---
-    total_filas_originales = len(nox)
-    print(f"Total filas iniciales: {total_filas_originales}")
+    total_inicial = len(nox)
+    print(f"Total filas iniciales: {total_inicial}")
 
     # 1. Eliminar filas con GPS inválido (0,0)
     gps_invalidos = nox[(nox['lat'] == 0) & (nox['lon'] == 0)]
@@ -128,6 +106,7 @@ if nox_exists:
         (nox['lat'] >= lat_min) & (nox['lat'] <= lat_max) &
         (nox['lon'] >= lon_min) & (nox['lon'] <= lon_max)
     ]
+
     nox = nox[~((nox['lat'] == 0) & (nox['lon'] == 0))].reset_index(drop=True)
 
     nox['timestamp_string'] = pd.to_datetime(nox['timestamp'], unit='ms')
@@ -175,17 +154,17 @@ if nox_exists:
             print(velocidades_altas[['timestamp', 'velocidad_kmh', 'lat', 'lon']])
 
 
-        # Asignar el flag de tienda según la posición
-        df_vehiculo['tienda'] = df_vehiculo.apply(
-            lambda row: obtener_tienda_con_estado(row['lat'], row['lon'], branches),
+        # Asignar la filial basada en la posición (usando la función refactorizada)
+        df_vehiculo['filial'] = df_vehiculo.apply(
+            lambda row: obter_filial_con_estado(row['lat'], row['lon'], branches),
             axis=1
         )
         
-        # Verificación temporal: conservar el flag "tienda" solo si se tienen al menos 3 registros consecutivos,
+        # Verificación temporal: conservar el flag "filial" solo si se tienen al menos 3 registros consecutivos,
         # o si, a pesar de ser un grupo pequeño, el tiempo máximo entre registros es mayor o igual a umbral_tiempo.
         min_consecutive = 3
         umbral_tiempo = 600  # 600 segundos = 10 minutos
-        df_vehiculo['group_id'] = (df_vehiculo['tienda'] != df_vehiculo['tienda'].shift()).cumsum()
+        df_vehiculo['group_id'] = (df_vehiculo['filial'] != df_vehiculo['filial'].shift()).cumsum()
         
         def check_group(grupo):
             if grupo.iloc[0] != "":
@@ -200,11 +179,11 @@ if nox_exists:
             else:
                 return grupo.tolist()
         
-        df_vehiculo['tienda'] = df_vehiculo.groupby('group_id')['tienda'].transform(check_group)
+        df_vehiculo['filial'] = df_vehiculo.groupby('group_id')['filial'].transform(check_group)
         df_vehiculo.drop(columns="group_id", inplace=True)
         
-        # Ahora, forzar la velocidad a 0 en los registros confirmados como parada en tienda
-        df_vehiculo.loc[df_vehiculo['tienda'] != "", 'velocidad_kmh'] = 0
+        # Ahora, forzar la velocidad a 0 en los registros confirmados como parada en filial
+        df_vehiculo.loc[df_vehiculo['filial'] != "", 'velocidad_kmh'] = 0
         
         # Clasificar la velocidad para análisis posterior
         def clasificar_velocidad(velocidad):
