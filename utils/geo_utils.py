@@ -1,4 +1,6 @@
 import math
+import pandas as pd
+
 
 def haversine(lat1, lon1, lat2, lon2):
     """

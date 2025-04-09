@@ -2,7 +2,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Attach to Docker (pipeline)",
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Attach to Docker (Windows)",
             "type": "python",
             "request": "attach",
             "connect": {
@@ -12,6 +20,21 @@
             "pathMappings": [
                 {
                     "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/app"
+                }
+            ]
+        },
+        {
+            "name": "Attach to Docker (WSL)",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "/mnt/c/Users/User/Desktop/repo_gitlab/mundial",
                     "remoteRoot": "/app"
                 }
             ]

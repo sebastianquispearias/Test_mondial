@@ -1,18 +1,19 @@
-import sys
 import os
+import sys
+print("CWD:", os.getcwd())
+print("sys.path:", sys.path)
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+#sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import pandas as pd
 from preprocess.ensemble import VoteEnsemble
 from math import radians, sin, cos, sqrt, atan2
 import numpy as np
 import matplotlib.pyplot as plt
-#import seaborn as sns
-from utils.maintenance import detectar_mantenimiento
+from utils.maintenance import detect_maintenance
 from utils.geo_utils import haversine, extract_coordinates, filtrar_gps, obter_filial_con_estado
 from utils.vehicle_processing import procesar_vehiculo
 
-# Importar la lista de tiendas desde el archivo dados_rutas_lojas.py
-from pipeline.dados_rutas_lojas import branches
-
+from utils.dados_rutas_lojas import branches
 # Verifica la existencia de archivos
 path = "./"  
 sys.path.append(path)
@@ -20,10 +21,10 @@ sys.path.append(path)
 executeAbastecimento = os.getenv("EXECUTE_ABASTECIMENTO", "False").lower() == "true"
 executeNox = os.getenv("EXECUTE_NOX","False").lower() == "true"
 
-##
+###########
 executeAbastecimento = False
 executeNox = True
-##
+#########
 
 if not os.path.exists(path + "dados limpos/"):
     os.makedirs(path + "dados limpos/")
@@ -32,6 +33,8 @@ if not os.path.exists(path + "anomalias/"):
 if not os.path.exists(path + "dados limpos/invalidos/"):
     os.makedirs(path + "dados limpos/invalidos/")
 
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+path = os.path.join(BASE_DIR, "")
 
 nox_exists = os.path.exists(path + "dados limpos/nox.csv")
 print("nox_exists:", nox_exists)
@@ -43,8 +46,6 @@ abastecimento_invalidos_path = path + "dados limpos/invalidos/invalid_consumptio
 # Procesar abastecimento
 ############################################################################################
 if executeAbastecimento :
-    nox = pd.read_csv(path + "dados limpos/nox.csv")
-    print("DataFrame de nox limpos:", nox.shape)
     veiculos = pd.read_csv(path + "dados/informacoes_veiculos.csv")
     abastecimento = pd.read_csv(path + "dados limpos/abastecimentos.csv")
     abastecimento_invalido = pd.read_csv(abastecimento_invalidos_path)
@@ -82,7 +83,7 @@ if executeAbastecimento :
 # Procesar NOx
 ############################################################################################
 if executeNox:
-    # Cargar datos
+
     nox = pd.read_csv(path + "dados limpos/nox.csv")
     
     # Detectar anomalías
@@ -109,13 +110,24 @@ if executeNox:
     
     # (Opcional: Ordenar por 'order' o por 'timestamp' si es necesario)
     # nox = nox.sort_values(by=['vehicle_number', 'timestamp'], ascending=[True, False])
-    
+    maintenance_results =[]
     vehiculos_procesados = []
     
     ######## Procesar cada vehículo de forma separada
     for vehicle_id, df_vehiculo in nox.groupby('vehicle_number'):
         df_vehiculo = df_vehiculo.copy()
         df_vehiculo = procesar_vehiculo(df_vehiculo, vehicle_id, branches, min_consecutive=3, umbral_tiempo=600)
+
+        result_vehiculo = detect_maintenance(df_vehiculo)
+        
+        print(f"Resultado de manutenção para o veículo {vehicle_id}:")
+        print(result_vehiculo)
+        
+        maintenance_results.append({
+            "vehicle_number": vehicle_id,
+            "resultado_manutencao": result_vehiculo
+        })
+        
         vehiculos_procesados.append(df_vehiculo)
     
     nox_procesado = pd.concat(vehiculos_procesados, ignore_index=True)
