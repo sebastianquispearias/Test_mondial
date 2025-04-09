@@ -9,6 +9,7 @@ model/small.joblib
 log/
 *.pyc
 **/__pycache__/
+*.ipynb
 
 # Allow .py files and ignore the rest in pipeline dir
 pipeline/*
