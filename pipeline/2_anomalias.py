@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from utils.maintenance import detect_maintenance
 from utils.geo_utils import haversine, extract_coordinates, filtrar_gps, obter_filial_con_estado
-from utils.vehicle_processing import procesar_vehiculo
+from utils.vehicle_processing import procesar_vehiculo, imputar_rota
 
 from utils.dados_rutas_lojas import branches
 # Verifica la existencia de archivos
@@ -119,7 +119,8 @@ if executeNox:
         df_vehiculo = procesar_vehiculo(df_vehiculo, vehicle_id, branches, min_consecutive=3, umbral_tiempo=600)
 
         result_vehiculo = detect_maintenance(df_vehiculo)
-        
+        df_vehiculo_final = imputar_rota(df_vehiculo)
+
         print(f"Resultado de manutenção para o veículo {vehicle_id}:")
         print(result_vehiculo)
         
@@ -127,7 +128,7 @@ if executeNox:
             "vehicle_number": vehicle_id,
             "resultado_manutencao": result_vehiculo
         })
-        
+        df_vehiculo
         vehiculos_procesados.append(df_vehiculo)
     
     nox_procesado = pd.concat(vehiculos_procesados, ignore_index=True)

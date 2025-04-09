@@ -71,7 +71,7 @@ def detect_maintenance(df_vehiculo, interval_size=10):
     
     intervalos['clasificacao'] = intervalos['vel_ponderada'].apply(clasificar)
     print("10. Clasificación de velocidades aplicada. Distribución:")
-    print(intervalos['clasificacion'].value_counts())
+    print(intervalos['clasificacao'].value_counts())
     
 
     # Agregar intervalos por categoria para calcular o NOx médio ponderado

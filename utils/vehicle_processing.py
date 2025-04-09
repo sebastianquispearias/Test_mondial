@@ -51,6 +51,7 @@ def procesar_vehiculo(df_vehiculo, vehicle_id, branches, min_consecutive=3, umbr
     
     # Agrupar registros consecutivos para manter a filial
     df_vehiculo['group_id'] = (df_vehiculo['filial'] != df_vehiculo['filial'].shift()).cumsum()
+
     def check_group(grupo):
         if grupo.iloc[0] != "":
             if len(grupo) < min_consecutive:
@@ -63,30 +64,33 @@ def procesar_vehiculo(df_vehiculo, vehicle_id, branches, min_consecutive=3, umbr
                 return grupo.tolist()
         else:
             return grupo.tolist()
+        
     df_vehiculo['filial'] = df_vehiculo.groupby('group_id')['filial'].transform(check_group)
     df_vehiculo.drop(columns="group_id", inplace=True)
    ########################## 
     df_vehiculo['filial'].replace("", pd.NA, inplace=True)
    ############### 
     # Criar colunas auxiliares usando ffill (valor acima) e bfill (valor abaixo)
-    df_vehiculo['filial_arriba'] = df_vehiculo['filial'].ffill()   # valor mais atual (acima)
-    df_vehiculo['filial_abajo']  = df_vehiculo['filial'].bfill()    # valor mais antigo (abaixo)
+ #   df_vehiculo['filial_arriba'] = df_vehiculo['filial'].ffill()   # valor mais atual (acima)
+ #   df_vehiculo['filial_abajo']  = df_vehiculo['filial'].bfill()    # valor mais antigo (abaixo)
     
     # Para cada linha com filial NA, preencher com a string formatada:
     # "rota entre [filial_abajo] ate [filial_arriba]"
-    mask = df_vehiculo['filial'].isna()
-    df_vehiculo.loc[mask, 'filial'] = (
-         "Rota entre " +
-         df_vehiculo.loc[mask, 'filial_abajo'] +
-         " até " +
-         df_vehiculo.loc[mask, 'filial_arriba']
-    )
+ #   mask = df_vehiculo['filial'].isna()
+ #   df_vehiculo.loc[mask, 'filial'] = (
+ #        "Rota entre " +
+ #        df_vehiculo.loc[mask, 'filial_abajo'] +
+ #        " até " +
+ #        df_vehiculo.loc[mask, 'filial_arriba']
+ #   )
     
     # Remover as colunas auxiliares
-    df_vehiculo.drop(['filial_arriba', 'filial_abajo'], axis=1, inplace=True)
+   # df_vehiculo.drop(['filial_arriba', 'filial_abajo'], axis=1, inplace=True)
 #############
+    
+    
     # Forçar velocidade 0 onde a filial foi atribuída
-    df_vehiculo.loc[df_vehiculo['filial'] != "", 'velocidad_kmh'] = 0
+    df_vehiculo.loc[df_vehiculo['filial'].notna(), 'velocidad_kmh'] = 0
     
     def clasificar_velocidade(vel):
         if vel < 30:
@@ -97,4 +101,25 @@ def procesar_vehiculo(df_vehiculo, vehicle_id, branches, min_consecutive=3, umbr
             return 'elevada'
     df_vehiculo['clasificacion_velocidade'] = df_vehiculo['velocidad_kmh'].apply(clasificar_velocidade)
     
+
+
     return df_vehiculo
+
+def imputar_rota(df):
+    # Criar colunas auxiliares com ffill e bfill
+    df['filial_arriba'] = df['filial'].ffill()
+    df['filial_abajo'] = df['filial'].bfill()
+    
+    # Preencher as linhas onde 'filial' é NA com a string formatada
+    mask = df['filial'].isna()
+    df.loc[mask, 'filial'] = (
+        "Rota entre " +
+        df.loc[mask, 'filial_abajo'] +
+        " até " +
+        df.loc[mask, 'filial_arriba']
+    )
+    
+    # Remover as colunas auxiliares
+    df.drop(['filial_arriba', 'filial_abajo'], axis=1, inplace=True)
+    return df
+
