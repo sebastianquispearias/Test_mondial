@@ -12,9 +12,11 @@ import matplotlib.pyplot as plt
 from utils.maintenance import detect_maintenance
 from utils.geo_utils import haversine, extract_coordinates, filtrar_gps, obter_filial_con_estado
 from utils.vehicle_processing import procesar_vehiculo, imputar_rota
-
+from utils.plotting import plot_boxplot_intervals_with_weighted_mean, gerar_histogramas_consumo
+from utils.export import export_maintenance_summary_csv, export_maintenance_results_excel
+from preprocess.movement import stopped_df
 from utils.dados_rutas_lojas import branches
-# Verifica la existencia de archivos
+
 path = "./"  
 sys.path.append(path)
 
@@ -25,6 +27,8 @@ executeNox = os.getenv("EXECUTE_NOX","False").lower() == "true"
 executeAbastecimento = False
 executeNox = True
 #########
+
+
 
 if not os.path.exists(path + "dados limpos/"):
     os.makedirs(path + "dados limpos/")
@@ -47,8 +51,8 @@ abastecimento_invalidos_path = path + "dados limpos/invalidos/invalid_consumptio
 ############################################################################################
 if executeAbastecimento :
     veiculos = pd.read_csv(path + "dados/informacoes_veiculos.csv")
-    abastecimento = pd.read_csv(path + "dados limpos/abastecimentos.csv")
-    abastecimento_invalido = pd.read_csv(abastecimento_invalidos_path)
+    abastecimento = pd.read_csv(path + "dados limpos/abastecimentosVALIDO_USAR_EXCEL.csv")
+  # abastecimento_invalido = pd.read_csv(abastecimento_invalidos_path)
     
     # Agregar la columna `vehicle_type` únicamente
     veiculos = veiculos[["fleet_number", "vehicle_type"]].rename(columns={"fleet_number": "vehicle_number"})
@@ -74,6 +78,11 @@ if executeAbastecimento :
     if not abastecimento_invalido.empty:
         abastecimento_invalido["anomaly_liter_supply"] = clf.predict(abastecimento_invalido["liter_supply"])
     
+    
+    # for vehicle_id, df_vehiculo in nox.groupby('vehicle_number'):
+    #     gerar_histogramas_consumo(abastecimento, vehicle_number=101)
+
+
     # Combinar datos válidos e inválidos y guardar
     abastecimento = pd.concat([abastecimento, abastecimento_invalido], ignore_index=True)
     abastecimento = abastecimento.replace({True: 1, False: 0})
@@ -85,7 +94,7 @@ if executeAbastecimento :
 if executeNox:
 
     nox = pd.read_csv(path + "dados limpos/nox.csv")
-    
+   
     # Detectar anomalías
     clf = VoteEnsemble()
     nox['anomaly_nox'] = clf.fit_predict(nox['NOx'])
@@ -112,21 +121,34 @@ if executeNox:
     # nox = nox.sort_values(by=['vehicle_number', 'timestamp'], ascending=[True, False])
     maintenance_results =[]
     vehiculos_procesados = []
-    
+    # 140,120,114
     ######## Procesar cada vehículo de forma separada
     for vehicle_id, df_vehiculo in nox.groupby('vehicle_number'):
         df_vehiculo = df_vehiculo.copy()
         df_vehiculo = procesar_vehiculo(df_vehiculo, vehicle_id, branches, min_consecutive=3, umbral_tiempo=600)
+        
+        df_vehiculo.to_csv(path + "anomalias/df_vehiculo_sin_stopped.csv", index=False)
 
-        result_vehiculo = detect_maintenance(df_vehiculo)
-        df_vehiculo_final = imputar_rota(df_vehiculo)
+        df_vehiculo = stopped_df(df_vehiculo)
+      #  df_vehiculo = df_vehiculo[~df_vehiculo['label_parado_nox']]
+        df_vehiculo.to_csv(path + "anomalias/df_vehiculo_despues_stopped.csv", index=False)
+
+        maintenance_result  = detect_maintenance(df_vehiculo)
+        resumo = maintenance_result.get("resumo_nox")
+        requiere_mant = maintenance_result.get("requiere_manutencao")  # True o False
+        intervalos = maintenance_result.get("intervalos")
+
+       # if intervalos is not None and not intervalos.empty:
+        # plot_boxplot_intervals_with_weighted_mean(intervalos, vehicle_id, resumo, requiere_mant)
+        
+        df_vehiculo = imputar_rota(df_vehiculo)
 
         print(f"Resultado de manutenção para o veículo {vehicle_id}:")
-        print(result_vehiculo)
+        print(maintenance_result)
         
         maintenance_results.append({
             "vehicle_number": vehicle_id,
-            "resultado_manutencao": result_vehiculo
+            "resultado_manutencao": maintenance_result
         })
         df_vehiculo
         vehiculos_procesados.append(df_vehiculo)
@@ -134,6 +156,9 @@ if executeNox:
     nox_procesado = pd.concat(vehiculos_procesados, ignore_index=True)
     print(f"DataFrame de NOx processado: {nox_procesado.shape[0]} filas")
     
-        
+    
+    export_maintenance_summary_csv(maintenance_results, output_filename="maintenance_summary.csv")
+
+   
     nox_procesado.to_csv(path + "anomalias/nox.csv", index=False)
     print("Arquivo anomalias/nox.csv gerado com sucesso")

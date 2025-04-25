@@ -17,6 +17,7 @@ def procesar_vehiculo(df_vehiculo, vehicle_id, branches, min_consecutive=3, umbr
       
     Retorna o DataFrame processado para o veículo.
     """
+    df_vehiculo = df_vehiculo.sort_values('order', ascending=False)
     df_vehiculo['lat_prev'] = df_vehiculo['lat'].shift(-1)
     df_vehiculo['lon_prev'] = df_vehiculo['lon'].shift(-1)
     df_vehiculo['distancia_km'] = df_vehiculo.apply(
@@ -113,7 +114,7 @@ def imputar_rota(df):
     # Preencher as linhas onde 'filial' é NA com a string formatada
     mask = df['filial'].isna()
     df.loc[mask, 'filial'] = (
-        "Rota entre " +
+        "###############Rota entre " +
         df.loc[mask, 'filial_abajo'] +
         " até " +
         df.loc[mask, 'filial_arriba']

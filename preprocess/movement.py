@@ -7,10 +7,15 @@ def stopped(df):
 
     Lê a fonte de emissões e retorna a condição em que o veículo está ou não andando.
     """
+
+    #
+
     criteria_1 = df["NOx"] <= 250
     criteria_2 = df["NOx_max"] <= 300
     criteria_3 = df["NOx_dp"] <= 50
-    criteria = criteria_1 & criteria_2 & criteria_3
+    criteria_4 = df["velocidad_kmh"] <=5       
+   # criteria_5 = df["velocidad_kmh"] <= 100 #criteria_4 & criteria_3
+    criteria = criteria_4 & criteria_3 & criteria_2 & criteria_1
     return criteria
 
 def stopped_df(df):
