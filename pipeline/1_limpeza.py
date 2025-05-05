@@ -16,11 +16,11 @@ from preprocess.cleanup import filter_desligado, filter_coordinate_in_brazil
 
 def full_csv(select = 'abastecimento'):
     nox_exists = os.path.exists(path+"dados/nox.csv")
-    abastecimento_exists = os.path.exists(path+"dados/abastecimentos.csv")
+    abastecimento_exists = os.path.exists(path+"dados/abastecimento.csv")
     if select == 'nox' and nox_exists:
-        return pd.read_csv(path+'dados/nox.csv')
+        return pd.read_csv(path+'dados/nox.csv', sep=',')
     elif select == 'abastecimento' and abastecimento_exists:
-        return pd.read_csv(path+'dados/abastecimentos.csv')
+        return pd.read_csv(path+'dados/abastecimento.csv', sep=';')
 
 if __name__ == '__main__':
     path='./'
@@ -28,6 +28,8 @@ if __name__ == '__main__':
     executeAbastecimento = os.getenv("EXECUTE_ABASTECIMENTO", "False").lower() == "true"
     executeNox = os.getenv("EXECUTE_NOX","False").lower() == "true"
     
+    executeAbastecimento = True############debug
+    executeNox = True #####################
     # Cria, caso não exista, a pasta que armazenará os logs
     if not os.path.exists(path+"dados limpos/"): os.makedirs(path+"dados limpos/")
     nox_exists = os.path.exists(path+"dados/nox.csv")
@@ -36,11 +38,11 @@ if __name__ == '__main__':
         print(f"Archivo {file_path} encontrado, tamaño: {os.path.getsize(file_path)} bytes")
     else:
         print(f"ERROR: Archivo {file_path} no encontrado")
-    abastecimento_exists = os.path.exists(path+"dados/abastecimentos.csv")
+    abastecimento_exists = os.path.exists(path+"dados/abastecimento.csv")
 
     # Limpeza - Abastecimento
     if executeAbastecimento:
-        abastecimento = pd.read_csv(path+'dados/abastecimentos.csv', index_col=[0])
+        abastecimento = pd.read_csv(path+'dados/abastecimento.csv', index_col=[0], sep=';')
         old_size = len(abastecimento)
         abastecimento = filter_km(abastecimento, arg_return=0)
         print(len(abastecimento))
@@ -48,12 +50,12 @@ if __name__ == '__main__':
         print(len(abastecimento))
         abastecimento = filter_odometer(abastecimento, arg_return=0)
         print(len(abastecimento))
-        abastecimento.to_csv(path+'dados limpos/abastecimentos.csv')
+        abastecimento.to_csv(path+'dados limpos/abastecimento.csv')
         new_size = len(abastecimento)
 
     # Limpeza - NOx
     if executeNox:
-        nox = pd.read_csv(path+'dados/nox.csv', index_col=[0])
+        nox = pd.read_csv(path+'dados/nox.csv', index_col=[0], sep=',')
         print(f"DataFrame de NOx: {nox.shape[0]} filas")
 
         old_size = len(nox)

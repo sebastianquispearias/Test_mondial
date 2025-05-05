@@ -14,7 +14,6 @@ def stopped(df):
     criteria_2 = df["NOx_max"] <= 300
     criteria_3 = df["NOx_dp"] <= 50
     criteria_4 = df["velocidad_kmh"] <=5       
-   # criteria_5 = df["velocidad_kmh"] <= 100 #criteria_4 & criteria_3
     criteria = criteria_4 & criteria_3 & criteria_2 & criteria_1
     return criteria
 
